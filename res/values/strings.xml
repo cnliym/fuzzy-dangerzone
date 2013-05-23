@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">Taxi</string>
+    <string name="action_settings">Settings</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="conn_network_fail">Network is not connected, please check it</string>
+    <string name="get_location_fail">get location failed</string>
+    <string name="longitude">longitude</string>
+    <string name="latutide">latutide</string>
+</resources>
