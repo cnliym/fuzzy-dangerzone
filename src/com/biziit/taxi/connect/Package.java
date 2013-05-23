@@ -212,7 +212,11 @@ public class Package {
 	}
 
 	/**
+<<<<<<< HEAD
 	 * 终端进行无线数据传输的消息。 <br/>
+=======
+	 * �ն˽���������ݴ������Ϣ�� <br/>
+>>>>>>> map diaplay and location
 	 * <br/>
 	 * Pos Field<br/>
 	 * 0 Message ID<br/>
@@ -335,7 +339,11 @@ public class Package {
 	}
 
 	/**
+<<<<<<< HEAD
 	 * 原厂服务器释放终端连接的消息。 <br/>
+=======
+	 * ԭ���������ͷ��ն����ӵ���Ϣ�� <br/>
+>>>>>>> map diaplay and location
 	 * Pos Field<br/>
 	 * 0 Message ID<br/>
 	 * 1 Message Length<br/>
@@ -363,7 +371,11 @@ public class Package {
 	}
 
 	/**
+<<<<<<< HEAD
 	 * 终端定时上传的心跳消息，以保持TCP连接，服务器无需响应。 <br/>
+=======
+	 * �ն˶�ʱ�ϴ���������Ϣ���Ա���TCP���ӣ�������������Ӧ�� <br/>
+>>>>>>> map diaplay and location
 	 * Pos Field<br/>
 	 * 0 Message ID<br/>
 	 */
@@ -376,12 +388,17 @@ public class Package {
 	}
 
 	/**
+<<<<<<< HEAD
 	 * 服务器下传终端参数的消息，参数为TAXI平台唯一识别号。 parameterSets中只会有一个为唯一识别号<br/>
+=======
+	 * �������´��ն˲������Ϣ������ΪTAXIƽ̨Ψһʶ��š� parameterSets��ֻ����һ��ΪΨһʶ���<br/>
+>>>>>>> map diaplay and location
 	 * Pos Field<br/>
 	 * 0 Message ID<br/>
 	 * 1 Message Length<br/>
 	 * 2 Parameters Count<br/>
 	 * 3 Parameter Sets<br/>
+<<<<<<< HEAD
 	 * … <br/>
 	 * N <br/>
 	 * N+1 Parity Byte<br/>
@@ -397,6 +414,23 @@ public class Package {
 	 * 3 Parameter ID：参数ID，全局唯一，1个字节长度。<br/>
 	 * 4 Length：参数值字段的长度。<br/>
 	 * 5 Value：参数值，可以为整型、浮点型、字符串等，取决于参数自身类型。字符串型参数无需结束符。<br/>
+=======
+	 * �� <br/>
+	 * N <br/>
+	 * N+1 Parity Byte<br/>
+	 * �ֶ�˵���� <br/>
+	 * 1 Parameters Count���������<br/>
+	 * 2 Parameter Set��<br/>
+	 * ��ʽ���£� <br/>
+	 * 1 Parameter ID<br/>
+	 * 2 Length<br/>
+	 * 3 Value<br/>
+	 * �� <br/>
+	 * M <br/>
+	 * 3 Parameter ID������ID��ȫ��Ψһ��1���ֽڳ��ȡ�<br/>
+	 * 4 Length������ֵ�ֶεĳ��ȡ�<br/>
+	 * 5 Value������ֵ������Ϊ���͡������͡��ַ�ȣ�ȡ���ڲ����������͡��ַ��Ͳ�����������<br/>
+>>>>>>> map diaplay and location
 	 * 
 	 */
 	static class DParameter extends ReceivedPackage {

@@ -8,4 +8,7 @@
     <string name="get_location_fail">get location failed</string>
     <string name="longitude">longitude</string>
     <string name="latutide">latutide</string>
+    <string name="Continue">Continue</string>
+    <string name="login_title">LOG IN</string>
+    <drawable name="login_activity_bkcolor">#cbcbcb</drawable>
 </resources>

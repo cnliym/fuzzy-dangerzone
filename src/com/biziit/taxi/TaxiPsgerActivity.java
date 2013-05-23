@@ -3,13 +3,18 @@ package com.biziit.taxi;
 import java.io.IOException;
 import java.util.List;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.LocationSource;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-
+import android.R.integer;
+import android.app.Activity;
+import android.app.PendingIntent;
+import android.app.PendingIntent.CanceledException;
+import android.content.ActivityNotFoundException;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
+import android.content.res.Configuration;
 import android.location.Address;
 import android.location.Criteria;
 import android.location.Geocoder;
@@ -18,20 +23,27 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
-import android.content.res.Configuration;
+import android.os.Message;
+import android.provider.Settings;
 import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 import android.view.Menu;
-import android.widget.TextView;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
+
+import com.biziit.taxi.mapapi.ConverUtil;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.LocationSource;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 public class TaxiPsgerActivity extends FragmentActivity {
 
@@ -39,11 +51,33 @@ public class TaxiPsgerActivity extends FragmentActivity {
 	private static final String LAST_LAT = "last_latutide";
 	private static final String LAST_LNG = "last_longitude";
 	
+	private static final int CONTINUE_MSG = 1;
+	protected static final String LOGIN_NAME = "login_name";
 	protected Location location;
 	protected LocationManager lm;
-	private Handler UiHandler;
+	private Handler UiHandler  = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			super.handleMessage(msg);
+			
+			switch(msg.what) {
+				case CONTINUE_MSG :
+					double[] lat = (double[]) msg.obj;
+					Log.d(TAG,"geo result, lng: " + lat[0] + ", lat: " + lat[1]);
+					if (needLogin()) {
+						startLoginActivity();
+					} else {
+						
+					}
+					saveCurrentLat(lat[0], lat[1]);
+					break;
+			}
+		}
+
+	};
 	
 	public SharedPreferences preferces;
+	double lastLatitude, lastLongtitude;
     /**
      * Note that this may be null if the Google Play services APK is not available.
      */
@@ -52,14 +86,15 @@ public class TaxiPsgerActivity extends FragmentActivity {
     private Geocoder geoCoder;
 	private LatLng currentLatLng;
 
+	private EditText etAddress;
+	private Button continueButton;
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_taxi_psger);
 		
-		UiHandler = new Handler();
-        String seviceName = Context.LOCATION_SERVICE;
-        lm = (LocationManager)getSystemService(seviceName);
+        lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         
         Criteria criteria = new Criteria();  
         criteria.setAccuracy(Criteria.ACCURACY_COARSE);  
@@ -69,11 +104,27 @@ public class TaxiPsgerActivity extends FragmentActivity {
         criteria.setPowerRequirement(Criteria.POWER_HIGH);  
         String provider = lm.getBestProvider(criteria, true);
         Log.d(TAG,"LocationProvider: " + provider);
-        location = lm.getLastKnownLocation(provider);
-        updateWithNewLocation(location);
-        lm.requestLocationUpdates(provider, 2000, 10, locationListener);
+        if (provider != null) {
+        	location = lm.getLastKnownLocation(provider);
+            geoCoder = new Geocoder(TaxiPsgerActivity.this);
+            updateWithNewLocation(location);
+            lm.requestLocationUpdates(provider, 2000, 10, locationListener);
+        } else {
+//        	Intent GPSIntent = new Intent();  
+//        	GPSIntent.setClassName("com.android.settings",  
+//        	        "com.android.settings.widget.SettingsAppWidgetProvider");  
+//        	GPSIntent.addCategory("android.intent.category.ALTERNATIVE");  
+//        	GPSIntent.setData(Uri.parse("custom:3"));  
+//        	try {  
+//        	    PendingIntent.getBroadcast(this, 0, GPSIntent, 0).send();  
+//        	} catch (CanceledException e) {  
+//        	    e.printStackTrace();  
+//        	}      
+ 
+        	Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+        	startActivityForResult(intent, 1);
+        }
         setUpMapIfNeeded();
-        geoCoder = new Geocoder(TaxiPsgerActivity.this);
 		ConnectionDetector connDetetor = new ConnectionDetector(getApplicationContext());
 		if (!connDetetor.isNetworkConnected()) {
 			showToast(R.string.conn_network_fail);
@@ -82,6 +133,47 @@ public class TaxiPsgerActivity extends FragmentActivity {
 		intentFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION); 
 		registerReceiver(connectionReceiver, intentFilter);
 		preferces = getPreferences(Activity.MODE_PRIVATE);
+		lastLatitude = Double.parseDouble(preferces.getString(LAST_LAT, "3.0800"));
+		lastLongtitude = Double.parseDouble(preferces.getString(LAST_LNG, "101.4200"));
+		etAddress = (EditText) findViewById(R.id.editText_start_address);
+		continueButton = (Button)findViewById(R.id.conitue_button);  
+    	continueButton.setOnClickListener(new OnClickListener() {
+    		@Override  
+            public void onClick(View v) {
+    			Runnable queryLat = new Runnable() {
+					@Override
+					public void run() {
+						// TODO Auto-generated method stub
+						String startAddress = etAddress.getEditableText().toString().trim();
+						Log.d(TAG,"startAddress: " + startAddress);
+						double[] results = ConverUtil.getLocationInfo(startAddress);
+//						Log.d(TAG,"geo result: " + results[0] + ", " + results[1]);
+						Message msg = UiHandler.obtainMessage(CONTINUE_MSG,1,1,results);
+						UiHandler.sendMessage(msg);
+					}
+				};
+				new Thread(queryLat).start();
+            }
+    	});
+	}
+
+	protected void startLoginActivity() {
+		// TODO Auto-generated method stub
+		try {
+			Intent intent = new Intent(this,LoginActivity.class);
+			startActivity(intent);
+		} catch (ActivityNotFoundException exception) {
+			Log.e(TAG,exception.toString());
+		}
+	}
+
+	protected void saveCurrentLat(double lng, double lat) {
+		// TODO Auto-generated method stub
+		Editor editor = preferces.edit();
+		if (null != editor) {
+			editor.putString(LAST_LNG, Double.toString(lng));
+			editor.putString(LAST_LAT, Double.toString(lat));
+		}
 	}
 
 	@Override
@@ -95,6 +187,7 @@ public class TaxiPsgerActivity extends FragmentActivity {
     protected void onResume() {
         super.onResume();
         setUpMapIfNeeded();
+        
     }
     
     @Override
@@ -117,7 +210,6 @@ public class TaxiPsgerActivity extends FragmentActivity {
 	
 	public void showToast(final int resId) {
 		UiHandler.post(new Runnable() {
-			
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
@@ -160,35 +252,36 @@ public class TaxiPsgerActivity extends FragmentActivity {
 	private void updateWithNewLocation(Location location) {
         // TODO Auto-generated method stub
         String latLongString;
-        TextView myLocationText;
         //myLocationText = (TextView)findViewById(R.id.myLocationText);
         if (location != null){
                 double lat = location.getLatitude();
                 double lng = location.getLongitude();
                 latLongString = "Î³¶È£º" + lat +", ¾­¶È: " + lng;
                 Log.d(TAG,"lat:" + lat +", lng:" + lng);
-//                try {
-//    				int latitude = (int) location.getLatitude();
-//    				int longitude = (int) location.getLongitude();
-//    				List<Address> list = geoCoder.getFromLocation(latitude, longitude, 2);
-//    				for (int i = 0; i < list.size(); i++) {
-//    					Address address = list.get(i);
-//    					Toast.makeText(
-//    							TaxiPsgerActivity.this,
-//    							address.getCountryName() + address.getAdminArea()
-//    									+ address.getFeatureName(), Toast.LENGTH_LONG)
-//    							.show();
-//    				}
-//    			} catch (IOException e) {
-//    				Toast.makeText(TaxiPsgerActivity.this, e.getMessage(), Toast.LENGTH_LONG)
-//    						.show();
-//    			}
+                try {
+    				int latitude = (int) location.getLatitude();
+    				int longitude = (int) location.getLongitude();
+    				List<Address> list = geoCoder.getFromLocation(latitude, longitude, 2);
+					Log.d(TAG,"list.size: " + list.size());
+    				for (int i = 0; i < list.size(); i++) {
+    					Address address = list.get(i);
+    					Toast.makeText(
+    							TaxiPsgerActivity.this,
+    							address.getCountryName() + address.getAdminArea()
+    									+ address.getFeatureName(), Toast.LENGTH_LONG)
+    							.show();
+    					Log.d(TAG,"adress: " + address);
+    				}
+    			} catch (IOException e) {
+    				Toast.makeText(TaxiPsgerActivity.this, e.getMessage(), Toast.LENGTH_LONG)
+    						.show();
+    			}
                 currentLatLng = new LatLng(lat, lng);                
         }else {
                 latLongString = getResources().getString(R.string.get_location_fail);
         }
         Log.i(TAG,latLongString);
-        showToast(latLongString);
+//        showToast(latLongString);
 	}
 	
     private void setUpMapIfNeeded() {
@@ -210,6 +303,9 @@ public class TaxiPsgerActivity extends FragmentActivity {
 //        mMap.setOnMapLongClickListener(mLocationSource);
         mMap.setMyLocationEnabled(true);
         if (currentLatLng != null) {
+        	mMap.moveCamera((CameraUpdateFactory.newLatLngZoom(currentLatLng, 14)));
+        } else {
+        	currentLatLng = new LatLng(lastLatitude, lastLongtitude);
         	mMap.moveCamera((CameraUpdateFactory.newLatLngZoom(currentLatLng, 14)));
         }
     }
@@ -235,4 +331,12 @@ public class TaxiPsgerActivity extends FragmentActivity {
 			}
 		}
 	};
+	private boolean needLogin() {
+		// TODO Auto-generated method stub
+		String loginNameString = preferces.getString(LOGIN_NAME, "");
+		if (!"".equals(loginNameString)) {
+			return false;
+		}
+		return true;
+	}
 }

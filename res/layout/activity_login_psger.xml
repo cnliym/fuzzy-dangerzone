@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".TaxiPsgerActivity" >
+
+    <TextView
+        android:id="@+id/editText1"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:background="@drawable/title_bg"
+        android:ems="10"
+        android:gravity="center"
+        android:text="@string/login_title"
+        android:textSize="22dp" >
+    </TextView>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/editText1"
+        android:layout_marginTop="26dp"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="10dp" >
+        <EditText
+            android:id="@+id/number_prefix"
+            android:layout_width="64dp"
+            android:layout_height="34dp"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="9dp"
+            android:layout_marginTop="9dp"
+            android:ems="10"
+            android:textSize="16dp" >
+
+            <requestFocus />
+        </EditText>
+
+        <EditText
+            android:id="@+id/login_phone_number"
+            android:layout_width="228dp"
+            android:layout_height="34dp"
+            android:layout_alignParentRight="true"
+            android:layout_marginRight="9dp"
+            android:layout_marginTop="9dp"
+            android:ems="10"
+            android:textSize="16dp" >
+
+            <requestFocus />
+        </EditText>
+
+    </RelativeLayout>
+
+</RelativeLayout>
