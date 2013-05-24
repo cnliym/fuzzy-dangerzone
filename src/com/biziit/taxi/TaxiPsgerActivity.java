@@ -100,29 +100,7 @@ public class TaxiPsgerActivity extends FragmentActivity {
 		
         lm = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
         
-        Criteria criteria = new Criteria();  
-        criteria.setAccuracy(Criteria.ACCURACY_COARSE);  
-        criteria.setAltitudeRequired(false);  
-        criteria.setBearingRequired(false);  
-        criteria.setCostAllowed(false);  
-        criteria.setPowerRequirement(Criteria.POWER_HIGH);  
-        String provider = lm.getBestProvider(criteria, true);
-        Log.d(TAG,"LocationProvider: " + provider);
-        if(!LocationManager.GPS_PROVIDER.equals(provider)&&!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)){
-            new AlertDialog.Builder(this)
-			.setTitle(provider==null?R.string.enableLocation:R.string.enableGPS)
-			.setPositiveButton("Goto", new DialogInterface.OnClickListener(){
-				@Override
-				public void onClick(DialogInterface arg0, int arg1) {
-		            startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), LOCATION_CODE);
-				}
-			}).setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
-				@Override
-				public void onClick(DialogInterface dialog, int which) {
-					dialog.cancel();
-				}
-			}).show();
-        }
+        checkLocation();
         setUpMapIfNeeded();
 		ConnectionDetector connDetetor = new ConnectionDetector(getApplicationContext());
 		if (!connDetetor.isNetworkConnected()) {
@@ -154,6 +132,32 @@ public class TaxiPsgerActivity extends FragmentActivity {
 				new Thread(queryLat).start();
             }
     	});
+	}
+
+	private void checkLocation() {
+		Criteria criteria = new Criteria();  
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);  
+        criteria.setAltitudeRequired(false);  
+        criteria.setBearingRequired(false);  
+        criteria.setCostAllowed(false);  
+        criteria.setPowerRequirement(Criteria.POWER_HIGH);  
+        String provider = lm.getBestProvider(criteria, true);
+        Log.d(TAG,"LocationProvider: " + provider);
+        if(!LocationManager.GPS_PROVIDER.equals(provider)&&!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            new AlertDialog.Builder(this)
+			.setTitle(provider==null?R.string.enableLocation:R.string.enableGPS)
+			.setPositiveButton("Goto", new DialogInterface.OnClickListener(){
+				@Override
+				public void onClick(DialogInterface arg0, int arg1) {
+		            startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), LOCATION_CODE);
+				}
+			}).setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.cancel();
+				}
+			}).show();
+        }
 	}
 
 	protected void startLoginActivity() {

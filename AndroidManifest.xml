@@ -37,6 +37,7 @@
             android:name="com.biziit.taxi.TaxiPsgerActivity"
             android:label="@string/app_name"
             android:configChanges="orientation|keyboard"
+            android:windowSoftInputMode="adjustResize"
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
