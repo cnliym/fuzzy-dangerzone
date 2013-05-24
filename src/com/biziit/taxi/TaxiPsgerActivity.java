@@ -38,6 +38,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.biziit.taxi.mapapi.ConverUtil;
+import com.google.analytics.tracking.android.EasyTracker;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.LocationSource;
@@ -189,7 +190,17 @@ public class TaxiPsgerActivity extends FragmentActivity {
         setUpMapIfNeeded();
         
     }
-    
+    @Override
+    public void onStart() {
+      super.onStart();
+      EasyTracker.getInstance().activityStart(this); // Add this method.
+    }
+
+    @Override
+    public void onStop() {
+      super.onStop();
+      EasyTracker.getInstance().activityStop(this); // Add this method.
+    }
     @Override
     protected void onDestroy() {
 		if (connectionReceiver != null) {
