@@ -9,6 +9,8 @@
     <string name="longitude">longitude</string>
     <string name="latutide">latutide</string>
     <string name="Continue">Continue</string>
+    <string name="enableGPS">GPS is not enabled! Would you like to enable it?</string>
+    <string name="enableLocation">Location access is not enabled! Would you like to enable it?</string>
     <string name="login_title">LOG IN</string>
     <drawable name="login_activity_bkcolor">#cbcbcb</drawable>
 </resources>

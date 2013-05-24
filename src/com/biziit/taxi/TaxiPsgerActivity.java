@@ -5,11 +5,13 @@ import java.util.List;
 
 import android.R.integer;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -48,6 +50,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 public class TaxiPsgerActivity extends FragmentActivity {
 
+	private static final int LOCATION_CODE = 1;
 	private static final String TAG = "TaxiPsgerActivity";
 	private static final String LAST_LAT = "last_latutide";
 	private static final String LAST_LNG = "last_longitude";
@@ -105,25 +108,20 @@ public class TaxiPsgerActivity extends FragmentActivity {
         criteria.setPowerRequirement(Criteria.POWER_HIGH);  
         String provider = lm.getBestProvider(criteria, true);
         Log.d(TAG,"LocationProvider: " + provider);
-        if (provider != null) {
-        	location = lm.getLastKnownLocation(provider);
-            geoCoder = new Geocoder(TaxiPsgerActivity.this);
-            updateWithNewLocation(location);
-            lm.requestLocationUpdates(provider, 2000, 10, locationListener);
-        } else {
-//        	Intent GPSIntent = new Intent();  
-//        	GPSIntent.setClassName("com.android.settings",  
-//        	        "com.android.settings.widget.SettingsAppWidgetProvider");  
-//        	GPSIntent.addCategory("android.intent.category.ALTERNATIVE");  
-//        	GPSIntent.setData(Uri.parse("custom:3"));  
-//        	try {  
-//        	    PendingIntent.getBroadcast(this, 0, GPSIntent, 0).send();  
-//        	} catch (CanceledException e) {  
-//        	    e.printStackTrace();  
-//        	}      
- 
-        	Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-        	startActivityForResult(intent, 1);
+        if(!LocationManager.GPS_PROVIDER.equals(provider)&&!lm.isProviderEnabled(LocationManager.GPS_PROVIDER)){
+            new AlertDialog.Builder(this)
+			.setTitle(provider==null?R.string.enableLocation:R.string.enableGPS)
+			.setPositiveButton("Goto", new DialogInterface.OnClickListener(){
+				@Override
+				public void onClick(DialogInterface arg0, int arg1) {
+		            startActivityForResult(new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS), LOCATION_CODE);
+				}
+			}).setNegativeButton("Cancel", new DialogInterface.OnClickListener(){
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+					dialog.cancel();
+				}
+			}).show();
         }
         setUpMapIfNeeded();
 		ConnectionDetector connDetetor = new ConnectionDetector(getApplicationContext());
